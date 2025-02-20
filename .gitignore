@@ -1,0 +1,41 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn.lock
+package-lock.json
+
+# IDE/editor files
+.vscode/
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build files
+dist/
+build/
+*.min.js
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/
+.pnp
+.pnp.js
+
+# Misc
+*.bak
+*.tmp
+
+# Python virtual environment
+venv/
+.env

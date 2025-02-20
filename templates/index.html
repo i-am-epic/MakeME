@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Makeme - Black Cat Edition</title>
+  <!-- Include p5.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    /* Basic styling */
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f4f4f4; 
+      text-align: center; 
+      margin: 0; 
+      padding: 0;
+    }
+    .container { 
+      background: #fff; 
+      padding: 20px; 
+      border-radius: 8px; 
+      display: inline-block; 
+      margin-top: 20px; 
+      box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+    }
+    #canvas-container { 
+      margin: auto; 
+      display: inline-block; 
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Makeme -Cat Edition</h1>
+    <!-- p5.js canvas container -->
+    <div id="canvas-container"></div>
+    
+    <!-- Prompt -->
+    <p id="prompt">Make the cat smile!</p>
+    
+    <!-- Joke Input Form -->
+    <form id="joke-form">
+      <input type="text" id="username" placeholder="Your name (optional)" />
+      <br><br>
+      <textarea id="joke" placeholder="Tell a joke..." rows="4" cols="50"></textarea>
+      <br><br>
+      <button type="submit">Submit Joke</button>
+    </form>
+    
+    <!-- Feedback -->
+    <div id="feedback"></div>
+    <br>
+    <a href="{{ url_for('leaderboard') }}">View Leaderboard</a>
+  </div>
+  
+  <script>
+    // Global variable to store the current cat mood; default is "sad"
+    let currentMood = "sad";
+    let cat;
+
+    // A Cat class to keep track of position, mood, and blinking animation
+    class Cat {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.mood = currentMood;
+        
+        // Blinking control
+        this.isBlinking = false;
+        this.blinkTimer = 0;
+      }
+      
+      update() {
+        // Update mood if it has changed globally
+        this.mood = currentMood;
+        
+        // Blinking logic: Blink every ~3 seconds (180 frames)
+        if (frameCount % 180 === 0) {
+          this.isBlinking = true;
+          this.blinkTimer = 0;
+        }
+        
+        // Close eyes for ~15 frames
+        if (this.isBlinking) {
+          this.blinkTimer++;
+          if (this.blinkTimer > 15) {
+            this.isBlinking = false;
+          }
+        }
+      }
+      
+      draw() {
+        push();
+        translate(this.x, this.y);
+        
+        // --- Body/Head: Tall rectangle (like the reference cat) ---
+        noStroke();
+        fill(0); 
+        rectMode(CENTER);
+        // A tall rectangle for the cat body
+        // Adjust the width/height to your preference
+        rect(0, 80, 122, 240, 20); // Slight corner rounding
+
+        // --- Ears ---
+        // Two triangles on top corners
+        fill(0);
+        // Left ear
+        triangle(-50, -30, -30, -90, -10, -30);
+        // Right ear
+        triangle(50, -30, 30, -90, 10, -30);
+        
+        // --- Eyes ---
+        // White eyes with black pupils, or a line if blinking
+        push();
+        if (!this.isBlinking) {
+          // Left eye
+          fill(255);
+          ellipse(-20, -10, 15, 15); // white sclera
+          fill(0);
+          ellipse(-20, -10, 5, 5);   // pupil
+          
+          // Right eye
+          fill(255);
+          ellipse(20, -10, 15, 15);
+          fill(0);
+          ellipse(20, -10, 5, 5);
+        } else {
+          // Eyes closed: draw white lines
+          stroke(255);
+          strokeWeight(2);
+          line(-27, -10, -13, -10);
+          line(13, -10, 27, -10);
+        }
+        pop();
+        // --- Nose (line + normal triangle) ---
+        stroke(255);
+        strokeWeight(2);
+        // A short vertical line
+        line(0, -5, 0, 5);
+
+        fill(255);
+        noStroke();
+        // Normal triangle: base at the bottom, apex at the top
+        triangle(-5, 7, 5, 7, 0, -3);
+        
+        // --- Whiskers ---
+        stroke(255);
+        strokeWeight(2);
+        // Left side whiskers
+        line(-40, 5, -65, 5);
+        line(-40,10, -65, 20);
+        line(-40, 0, -65, -10);
+        // Right side whiskers
+        line(40, 5, 65, 5);
+        line(40, 10, 65, 20);
+        line(40, 0, 65, -10);
+        
+        // --- Mouth / Expression ---
+        // White arcs or lines to show different moods
+        stroke(255);
+        strokeWeight(2);
+        noFill();
+        
+        
+        if (this.mood === "sad") {
+            // Sad: downward curved mouth shifted down by 20 points
+            arc(0, 20, 20, 10, PI, 0);
+        } else if (this.mood === "smile") {
+            // Smile: upward curve shifted down by 20 points
+            arc(0, 20, 20, 10, 0, PI*0.7);
+        } else if (this.mood === "laugh") {
+            // Laugh: bigger open mouth shifted down by 20 points
+            // Open mouth (complete oval shape)
+            arc(0, 20, 25, 15, 0, PI); 
+
+            // Tongue (wider and lower)
+            fill(255, 50, 50);
+            noStroke();
+            rect(-4, 32, 8, 14, 6);
+
+        }
+                
+        pop();
+      }
+    }
+
+    function setup() {
+      let canvas = createCanvas(500, 500);
+      canvas.parent("canvas-container");
+      
+      // Create our cat near the center
+      cat = new Cat(width / 2, height / 2);
+    }
+    
+    function draw() {
+      background(220);
+      
+      // Update & draw the cat
+      cat.update();
+      cat.draw();
+    }
+    
+    // Handle form submission and update cat mood
+    document.getElementById('joke-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const joke = document.getElementById('joke').value;
+      const username = document.getElementById('username').value || 'Anonymous';
+      
+      fetch('/submit_joke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ joke: joke, username: username })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('feedback').innerHTML = `<p>Your joke rating: ${data.rating}</p>`;
+        
+        // Update the global mood variable which the Cat instance uses
+        currentMood = data.mood;
+        
+        // Update the prompt text based on the returned mood
+        if (data.mood === 'laugh') {
+          document.getElementById('prompt').innerText = "The cat is laughing!";
+        } else if (data.mood === 'smile') {
+          document.getElementById('prompt').innerText = "The cat smiles!";
+        } else {
+          document.getElementById('prompt').innerText = "The cat remains sad. Try again!";
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+  </script>
+</body>
+</html>
