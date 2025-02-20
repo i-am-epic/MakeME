@@ -7,6 +7,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
 
+
 # Configure your OpenAI API key (keep this secure!)
 API_KEY = os.getenv("OPENAI_API_KEY")  # or assign directly
 OPENAI_URI = os.getenv("AZURE_OPENAI_ENDPOINT") 
